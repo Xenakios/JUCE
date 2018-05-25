@@ -725,6 +725,16 @@ public:
     /** Adds a child component to this one, makes it visible, and sets its component ID.
         @see addAndMakeVisible, addChildComponent
     */
+	
+	template<typename T, typename... Args>
+	std::unique_ptr<T> makeAddAndMakeVisible(Args&&... args)
+	{
+		auto temp = std::make_unique<T>(args...);
+		addAndMakeVisible(temp.get());
+		return std::move(temp);
+	}
+
+	
     void addChildAndSetID (Component* child, const String& componentID);
 
     /** Removes one of this component's child-components.
