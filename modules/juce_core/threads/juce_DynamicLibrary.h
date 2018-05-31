@@ -77,6 +77,20 @@ public:
     */
     void* getNativeHandle() const noexcept     { return handle; }
 
+	template<typename F>
+	void initFunctions(const String& funcname, F& funcptr)
+	{
+		*((void **)&funcptr) = getFunction(funcname);
+	}
+
+	template<typename F, typename... Ts>
+	void initFunctions(const String& funcname, F& funcptr, Ts&&... args)
+	{
+		*((void **)&funcptr) = getFunction(funcname);
+		initFunctions(args...);
+	}
+
+
 private:
     void* handle = nullptr;
 
