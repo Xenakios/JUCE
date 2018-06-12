@@ -68,11 +68,11 @@ struct AudioProcessorValueTreeState::Parameter   : public AudioProcessorParamete
                                                                    : text.getFloatValue());
     }
 
-    String getText (float normalisedValue, int length) const override
+    String getText (float normalisedValue, int /*length*/) const override
     {
         auto v = range.convertFrom0to1 (normalisedValue);
         return valueToTextFunction != nullptr ? valueToTextFunction (v)
-                                              : AudioProcessorParameter::getText (v, length);
+                                              : String (value, 2);
     }
 
     int getNumSteps() const override
