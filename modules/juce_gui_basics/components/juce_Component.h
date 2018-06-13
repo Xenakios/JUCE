@@ -2290,8 +2290,6 @@ private:
     std::unique_ptr<CachedComponentImage> cachedImage;
 
     class MouseListenerList;
-    friend class MouseListenerList;
-    friend struct ContainerDeletePolicy<MouseListenerList>;
     std::unique_ptr<MouseListenerList> mouseListeners;
     std::unique_ptr<Array<KeyListener*>> keyListeners;
     ListenerList<ComponentListener> componentListeners;
