@@ -41,8 +41,8 @@
 
 namespace Vst2
 {
-#include <pluginterfaces/vst2.x/aeffect.h>
-#include <pluginterfaces/vst2.x/aeffectx.h>
+#include "VST3_SDK/pluginterfaces/vst2.x/aeffect.h"
+#include "VST3_SDK/pluginterfaces/vst2.x/aeffectx.h"
 }
 
 #include "juce_VSTCommon.h"
