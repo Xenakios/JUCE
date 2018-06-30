@@ -1472,9 +1472,12 @@ public:
 
     /** @internal */
     static void JUCE_CALLTYPE setTypeOfNextNewPlugin (WrapperType);
-
+	
+	virtual void afterCreate() {};
+	NamedValueSet& getProperties() { return customProperties; }
 protected:
-    /** Callback to query if the AudioProcessor supports a specific layout.
+	NamedValueSet customProperties;
+	/** Callback to query if the AudioProcessor supports a specific layout.
 
         This callback is called when the host probes the supported bus layouts via
         the checkBusesLayoutSupported method. You should override this callback if you

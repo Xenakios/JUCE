@@ -2229,7 +2229,10 @@ namespace
 
                     auto* processor = createPluginFilterOfType (AudioProcessor::wrapperType_VST);
                     auto* wrapper = new JuceVSTWrapper (audioMaster, processor);
-                    return wrapper->getAEffect();
+					processor->getProperties().set("audioMasterCallback", (int64)audioMaster);
+					processor->getProperties().set("aeffect", (int64)wrapper->getAEffect());
+					processor->afterCreate();
+					return wrapper->getAEffect();
                 }
             }
             catch (...)
