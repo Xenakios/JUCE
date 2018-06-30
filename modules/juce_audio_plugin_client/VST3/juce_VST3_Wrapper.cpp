@@ -302,7 +302,7 @@ public:
                 hostContext->release();
 
             hostContext = context;
-
+			
             if (hostContext != nullptr)
                 hostContext->addRef();
         }
@@ -1232,7 +1232,8 @@ public:
     {
         if (host != hostContext)
             host.loadFrom (hostContext);
-
+		getPluginInstance().getProperties().set("hostctx", (int64)hostContext);
+		getPluginInstance().afterCreate();
         processContext.sampleRate = processSetup.sampleRate;
         preparePlugin (processSetup.sampleRate, (int) processSetup.maxSamplesPerBlock);
 
