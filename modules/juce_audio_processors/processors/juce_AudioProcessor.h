@@ -1473,7 +1473,14 @@ public:
     /** @internal */
     static void JUCE_CALLTYPE setTypeOfNextNewPlugin (WrapperType);
 	
+
+	/** Called from VST2 and VST3 plugin wrappers after construction. Override this to allow
+		plugins to initialize their use of the Reaper extension API.
+	*/
 	virtual void afterCreate() {};
+	/** Returns a NamedValueSet that can be used to store custom data in the AudioProcessor.
+		Currently used to store pointers for use with the Reaper extension API in VST2 and VST3 plugins.
+	*/
 	NamedValueSet& getProperties() { return customProperties; }
 protected:
 	NamedValueSet customProperties;
