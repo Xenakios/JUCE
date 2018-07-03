@@ -1318,7 +1318,7 @@ struct PhysicalTopologySource::Internal
                         bi->rotation = 0;
                     }
 
-                    layoutNeighbours (block, topology, block->uid, visited);
+                    layoutNeighbours (*block, topology, block->uid, visited);
                 }
             }
         }
@@ -1327,7 +1327,7 @@ struct PhysicalTopologySource::Internal
         {
             for (auto& block : topology.blocks)
                 if (block->uid == uid)
-                    return block;
+                    return *block;
 
             return {};
         }
@@ -1739,6 +1739,12 @@ struct PhysicalTopologySource::Internal
         uint32 getMemorySize() override
         {
             return modelData.programAndHeapSize;
+        }
+
+        uint32 getHeapMemorySize() override
+        {
+            jassert (isPositiveAndNotGreaterThan (programSize, modelData.programAndHeapSize));
+            return modelData.programAndHeapSize - programSize;
         }
 
         void setDataByte (size_t offset, uint8 value) override
