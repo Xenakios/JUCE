@@ -411,7 +411,7 @@ public:
 
    #if JUCE_STRICT_REFCOUNTEDPOINTER
     /** Checks whether this pointer is null */
-    operator bool() const noexcept                          { return referencedObject != nullptr; }
+    explicit operator bool() const noexcept                 { return referencedObject != nullptr; }
 
    #else
     /** Returns the object that this pointer references.
