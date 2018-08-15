@@ -937,8 +937,7 @@ private:
 
         FillType type (gradient);
 
-        auto gradientTransform = parseTransform (fillXml->getStringAttribute ("gradientTransform"))
-                                   .followedBy (transform);
+        auto gradientTransform = parseTransform (fillXml->getStringAttribute ("gradientTransform"));
 
         if (gradient.isRadial)
         {
@@ -1208,6 +1207,9 @@ private:
                     di->setTransform (transform.followedBy (*additionalTransform));
                 else
                     di->setTransform (transform);
+
+                di->setBoundingBox ({ (float) xml->getDoubleAttribute ("x", 0.0),     (float) xml->getDoubleAttribute ("y", 0.0),
+                                      (float) xml->getDoubleAttribute ("width", 0.0), (float) xml->getDoubleAttribute ("height", 0.0) });
 
                 return di;
             }
