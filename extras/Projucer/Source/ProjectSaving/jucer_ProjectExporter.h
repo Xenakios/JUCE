@@ -369,6 +369,7 @@ protected:
     const ProjectType& projectType;
     const String projectName;
     const File projectFolder;
+
     Value vst3Path, rtasPath, aaxPath; // these must be initialised in the specific exporter c'tors!
 
     ValueWithDefault targetLocationValue, extraCompilerFlagsValue, extraLinkerFlagsValue, externalLibrariesValue,

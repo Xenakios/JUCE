@@ -329,18 +329,26 @@ void ProjectExporter::createPropertyEditors (PropertyListBuilder& props)
 
 void ProjectExporter::createDependencyPathProperties (PropertyListBuilder& props)
 {
+    if (shouldBuildTargetType (ProjectType::Target::VST3PlugIn) && project.shouldBuildVST3())
+    {
+        if (dynamic_cast<DependencyPathValueSource*> (&getAAXPathValue().getValueSource()) != nullptr)
+            props.add (new DependencyPathPropertyComponent (project.getFile().getParentDirectory(), getVST3PathValue(), "VST3 SDK Folder"),
+                       "If you're building a VST3 plug-in, you can use this field to override the global VST3 SDK path with a project-specific path. "
+                       "This can be an absolute path, or a path relative to the Projucer project file.");
+    }
+
     if (shouldBuildTargetType (ProjectType::Target::AAXPlugIn) && project.shouldBuildAAX())
     {
         if (dynamic_cast<DependencyPathValueSource*> (&getAAXPathValue().getValueSource()) != nullptr)
             props.add (new DependencyPathPropertyComponent (project.getFile().getParentDirectory(), getAAXPathValue(), "AAX SDK Folder"),
-                       "If you're building an AAX plugin, this must be the folder containing the AAX SDK. This can be an absolute path, or a path relative to the Projucer project file.");
+                       "If you're building an AAX plug-in, this must be the folder containing the AAX SDK. This can be an absolute path, or a path relative to the Projucer project file.");
     }
 
     if (shouldBuildTargetType (ProjectType::Target::RTASPlugIn) && project.shouldBuildRTAS())
     {
         if (dynamic_cast<DependencyPathValueSource*> (&getRTASPathValue().getValueSource()) != nullptr)
             props.add (new DependencyPathPropertyComponent (project.getFile().getParentDirectory(), getRTASPathValue(), "RTAS SDK Folder"),
-                       "If you're building an RTAS, this must be the folder containing the RTAS SDK. This can be an absolute path, or a path relative to the Projucer project file.");
+                       "If you're building an RTAS plug-in, this must be the folder containing the RTAS SDK. This can be an absolute path, or a path relative to the Projucer project file.");
     }
 }
 
@@ -417,7 +425,7 @@ void ProjectExporter::addAAXFoldersToPath()
 
     if (aaxFolder.isNotEmpty())
     {
-        RelativePath aaxFolderPath (getAAXPathValue().toString(), RelativePath::projectFolder);
+        RelativePath aaxFolderPath (aaxFolder, RelativePath::projectFolder);
 
         addToExtraSearchPaths (aaxFolderPath);
         addToExtraSearchPaths (aaxFolderPath.getChildFile ("Interfaces"));

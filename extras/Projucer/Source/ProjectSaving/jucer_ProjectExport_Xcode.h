@@ -1630,9 +1630,7 @@ public:
         {
             if (type == AAXPlugIn)
             {
-                 auto aaxLibsFolder
-                    = RelativePath (owner.getAAXPathValue().toString(), RelativePath::projectFolder)
-                        .getChildFile ("Libs");
+                auto aaxLibsFolder = RelativePath (owner.getAAXPathValue().toString(), RelativePath::projectFolder).getChildFile ("Libs");
 
                 String libraryPath (config.isDebug() ? "Debug" : "Release");
                 libraryPath += "/libAAXLibrary_libcpp.a";

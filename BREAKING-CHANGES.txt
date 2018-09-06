@@ -6,6 +6,26 @@ Develop
 
 Change
 ------
+The Projucer's per-exporter Android SDK/NDK path options have been removed.
+
+Possible Issues
+---------------
+Projects that previously used these fields may no longer build.
+
+Workaround
+----------
+Use the Projucer's global paths settings to point to these directories, either
+by opening the "Projucer/File->Global Paths..." menu item or using the 
+"--set-global-search-path" command-line option.
+
+Rationale
+---------
+Having multiple places where the paths could be set was confusing and could
+cause unexpected mismatches.
+
+
+Change
+------
 SystemStats::getDeviceDescription() will now return the device code on iOS e.g.
 "iPhone7, 2" for an iPhone 6 instead of just "iPhone".
 
