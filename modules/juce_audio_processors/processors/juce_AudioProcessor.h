@@ -1486,7 +1486,9 @@ public:
     /** @internal */
     static void JUCE_CALLTYPE setTypeOfNextNewPlugin (WrapperType);
 	
-
+#ifdef REAPER_API_VST3_SUPPORT_AVAILABLE
+	virtual void VST3HostContextAvailable(void*) {}
+#endif
 	
 protected:
 	

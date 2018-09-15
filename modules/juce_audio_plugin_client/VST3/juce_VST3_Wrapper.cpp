@@ -1337,9 +1337,10 @@ public:
     {
         if (host != hostContext)
             host.loadFrom (hostContext);
-		//getPluginInstance().getProperties().set("hostctx", (int64)hostContext);
-		//getPluginInstance().afterCreate();
-        processContext.sampleRate = processSetup.sampleRate;
+#ifdef REAPER_API_VST3_SUPPORT_AVAILABLE
+		getPluginInstance().VST3HostContextAvailable((void*)hostContext);
+#endif
+		processContext.sampleRate = processSetup.sampleRate;
         preparePlugin (processSetup.sampleRate, (int) processSetup.maxSamplesPerBlock);
 
         return kResultTrue;
