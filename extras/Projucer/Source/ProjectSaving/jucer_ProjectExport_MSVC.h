@@ -136,9 +136,9 @@ public:
     //==============================================================================
     void initialiseDependencyPathValues() override
     {
-        vst3PathValueWrapper.init (Ids::vst3Path, TargetOS::windows);
-        aaxPathValueWrapper .init (Ids::aaxPath,  TargetOS::windows);
-        rtasPathValueWrapper.init (Ids::rtasPath, TargetOS::windows);
+        vst3PathValueWrapper.init ({ settings, Ids::vst3Folder, nullptr }, getAppSettings().getStoredPath (Ids::vst3Path, TargetOS::windows), TargetOS::windows);
+        aaxPathValueWrapper .init ({ settings, Ids::aaxFolder, nullptr },  getAppSettings().getStoredPath (Ids::aaxPath,  TargetOS::windows), TargetOS::windows);
+        rtasPathValueWrapper.init ({ settings, Ids::rtasFolder, nullptr }, getAppSettings().getStoredPath (Ids::rtasPath, TargetOS::windows), TargetOS::windows);
     }
 
     //==============================================================================
