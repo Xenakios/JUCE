@@ -41,8 +41,13 @@
 
 namespace Vst2
 {
-#include "VST3_SDK/pluginterfaces/vst2.x/aeffect.h"
-#include "VST3_SDK/pluginterfaces/vst2.x/aeffectx.h"
+// If the following files cannot be found then you are probably trying to host
+// VST2 plug-ins. To do this you must have a VST2 SDK in your header search
+// path. The VST2 SDK can be obtained from the vstsdk3610_11_06_2018_build_37
+// (or older) VST3 SDK or JUCE version 5.3.2.
+#include <vst2.x/aeffect.h>
+#include <vst2.x/aeffectx.h>
+
 }
 
 #include "juce_VSTCommon.h"
