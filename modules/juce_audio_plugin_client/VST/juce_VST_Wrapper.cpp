@@ -91,8 +91,8 @@ namespace Vst2
 // VST2 SDK in your header search path. The VST2 SDK can be obtained from the
 // vstsdk3610_11_06_2018_build_37 (or older) VST3 SDK or JUCE version 5.3.2.
 // You also need a VST2 license from Steinberg to distribute VST2 plug-ins.
-#include "pluginterfaces/vst2.x/aeffect.h"
-#include "pluginterfaces/vst2.x/aeffectx.h"
+#include "vst2.x/aeffect.h"
+#include "vst2.x/aeffectx.h"
 }
 
 using namespace juce;
