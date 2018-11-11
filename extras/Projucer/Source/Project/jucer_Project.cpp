@@ -532,6 +532,8 @@ void Project::warnAboutOldProjucerVersion()
                                                   "\n\n"
                                                   "Always make sure that you're running the very latest version, "
                                                   "preferably compiled directly from the JUCE repository that you're working with!");
+
+            return;
         }
     }
 }
@@ -1918,12 +1920,15 @@ EnabledModuleList& Project::getEnabledModules()
     return *enabledModuleList;
 }
 
-static Array<File> getAllPossibleModulePathsFromExporters (Project& project)
+static Array<File> getModulePathsFromCompatibleExporters (Project& project)
 {
     StringArray paths;
 
     for (Project::ExporterIterator exporter (project); exporter.next();)
     {
+        if (! exporter->mayCompileOnCurrentOS())
+            continue;
+
         auto& modules = project.getEnabledModules();
         auto n = modules.getNumModules();
 
@@ -1972,9 +1977,9 @@ AvailableModuleList& Project::getExporterPathsModuleList()
 void Project::rescanExporterPathModules (bool async)
 {
     if (async)
-        exporterPathsModuleList->scanPathsAsync (getAllPossibleModulePathsFromExporters (*this));
+        exporterPathsModuleList->scanPathsAsync (getModulePathsFromCompatibleExporters (*this));
     else
-        exporterPathsModuleList->scanPaths (getAllPossibleModulePathsFromExporters (*this));
+        exporterPathsModuleList->scanPaths (getModulePathsFromCompatibleExporters (*this));
 }
 
 ModuleIDAndFolder Project::getModuleWithID (const String& id)
