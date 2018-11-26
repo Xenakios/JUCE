@@ -189,7 +189,8 @@ public:
             ++startSample;
         }
     }
-
+	enum class State { idle, attack, decay, sustain, release };
+	State currentState = State::idle;
 private:
     //==============================================================================
     void calculateRates (const Parameters& parameters)
@@ -203,9 +204,8 @@ private:
     }
 
     //==============================================================================
-    enum class State { idle, attack, decay, sustain, release };
+    
 
-    State currentState = State::idle;
     Parameters currentParameters;
 
     double sr = 0.0;
