@@ -3079,9 +3079,8 @@ private:
 
         pluginRespondsToDPIChanges = plugin.pluginCanDo ("supportsViewDpiScaling") > 0;
 
-        if (pluginRespondsToDPIChanges)
-            if (auto* peer = getTopLevelComponent()->getPeer())
-                setScaleFactorAndDispatchMessage (peer->getPlatformScaleFactor());
+        if (auto* peer = getTopLevelComponent()->getPeer())
+            setScaleFactorAndDispatchMessage (peer->getPlatformScaleFactor());
 
        #if JUCE_WINDOWS && JUCE_WIN_PER_MONITOR_DPI_AWARE
         std::unique_ptr<ScopedDPIAwarenessDisabler> dpiDisabler;
