@@ -415,7 +415,7 @@ public:
         securityAtts.nLength = sizeof (securityAtts);
         securityAtts.bInheritHandle = TRUE;
 
-        if (CreatePipe (&readPipe, &writePipe, &securityAtts, 0)
+        if (CreatePipe (&readPipe, &writePipe, &securityAtts, 1024 * 1024)
              && SetHandleInformation (readPipe, HANDLE_FLAG_INHERIT, 0))
         {
             STARTUPINFOW startupInfo = { 0 };
