@@ -192,6 +192,10 @@ public:
             ++startSample;
         }
     }
+	bool isChanging() const
+	{
+		return currentState != State::idle && currentState != State::sustain;
+	}
 	enum class State { idle, attack, decay, sustain, release };
 	State currentState = State::idle;
 private:
