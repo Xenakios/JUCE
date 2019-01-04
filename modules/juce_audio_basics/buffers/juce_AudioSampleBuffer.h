@@ -22,7 +22,6 @@
 
 namespace juce
 {
-
 //==============================================================================
 /**
     A multi-channel buffer containing floating point audio samples.
@@ -33,12 +32,14 @@ template <typename Type>
 class AudioBuffer
 {
 public:
-    //==============================================================================
+	static_assert(std::is_floating_point<Type>::value, "Only floating point types supported");
+	//==============================================================================
     /** Creates an empty buffer with 0 channels and 0 length. */
     AudioBuffer() noexcept
        : channels (static_cast<Type**> (preallocatedChannelSpace))
     {
-    }
+		
+	}
 
     //==============================================================================
     /** Creates a buffer with a specified number of channels and samples.
