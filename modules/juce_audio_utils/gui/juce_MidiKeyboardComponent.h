@@ -391,8 +391,10 @@ protected:
 
     /** Returns the rectangle for a given key if within the displayable range */
     Rectangle<float> getRectangleForKey (int midiNoteNumber) const;
-
-
+	void updateNoteUnderMouse(Point<float>, bool isDown, int fingerNum);
+	void updateNoteUnderMouse(const MouseEvent&, bool isDown);
+	int xyToNote(Point<float>, float& mousePositionVelocity);
+	bool canScroll = true, useMousePositionForVelocity = true, shouldCheckMousePos = false;
 private:
     //==============================================================================
     struct UpDownButton;
@@ -414,7 +416,7 @@ private:
 
     int rangeStart = 0, rangeEnd = 127;
     float firstKey = 12 * 4.0f;
-    bool canScroll = true, useMousePositionForVelocity = true, shouldCheckMousePos = false;
+    
     std::unique_ptr<Button> scrollDown, scrollUp;
 
     Array<KeyPress> keyPresses;
@@ -422,11 +424,11 @@ private:
     int keyMappingOctave = 6, octaveNumForMiddleC = 3;
 
     Range<float> getKeyPos (int midiNoteNumber) const;
-    int xyToNote (Point<float>, float& mousePositionVelocity);
+    
     int remappedXYToNote (Point<float>, float& mousePositionVelocity) const;
     void resetAnyKeysInUse();
-    void updateNoteUnderMouse (Point<float>, bool isDown, int fingerNum);
-    void updateNoteUnderMouse (const MouseEvent&, bool isDown);
+    
+    
     void repaintNote (int midiNoteNumber);
     void setLowestVisibleKeyFloat (float noteNumber);
 
