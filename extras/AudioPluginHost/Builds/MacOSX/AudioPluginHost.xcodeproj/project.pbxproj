@@ -792,7 +792,8 @@
 				);
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
-					"$(HOME)/SDKs/VST_SDK/VST3_SDK",
+					"../../../../modules/juce_audio_processors/format_types/VST3_SDK",
+					"$(HOME)/SDKs/VST_SDK/VST2_SDK",
 					"../../JuceLibraryCode",
 					"../../../../modules",
 					"$(inherited)",
@@ -837,7 +838,8 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
-					"$(HOME)/SDKs/VST_SDK/VST3_SDK",
+					"../../../../modules/juce_audio_processors/format_types/VST3_SDK",
+					"$(HOME)/SDKs/VST_SDK/VST2_SDK",
 					"../../JuceLibraryCode",
 					"../../../../modules",
 					"$(inherited)",
@@ -1051,6 +1053,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (DE12B7643D374BFF7E4FEB1C);
+			knownRegions = (en, Base);
 		};
 	};
 	rootObject = ADE6E539DB98A302483A82D0;
