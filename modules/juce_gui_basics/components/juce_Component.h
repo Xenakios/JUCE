@@ -727,7 +727,7 @@ public:
     */
 	
 	template<typename T, typename... Args>
-	std::unique_ptr<T> makeAddAndMakeVisible(Args&&... args)
+	std::unique_ptr<T> makeAndAddAndMakeVisible(Args&&... args)
 	{
 		auto temp = std::make_unique<T>(args...);
 		addAndMakeVisible(temp.get());
