@@ -2157,6 +2157,17 @@ private:
             {
                 jassert (effect->resvd2 == 0);
                 jassert (effect->object != 0);
+				if (module->pluginName == "GRM Shuffling Stereo" || module->pluginName == "GRM Shuffling" ||
+					module->pluginName == "GRM Delays Stereo" ||
+					module->pluginName == "GRM Freeze Stereo" ||
+					module->pluginName == "GRM Reson Stereo") // || module->pluginName == "GRM Spaces")
+				{
+					Vst2::VstSpeakerArrangement temp1;
+					zerostruct(temp1);
+					Vst2::VstSpeakerArrangement temp2;
+					zerostruct(temp1);
+					effect->dispatcher(effect, Vst2::effSetSpeakerArrangement, 0, (pointer_sized_int)&temp1, &temp2, 0.0f);
+				}
 
                 _fpreset(); // some dodgy plugs mess around with this
             }
