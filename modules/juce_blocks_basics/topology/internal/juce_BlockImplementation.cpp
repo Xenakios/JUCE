@@ -227,17 +227,17 @@ public:
     }
 
     //==============================================================================
-    std::function<void(const String&)> logger;
+    std::function<void(const Block& block, const String&)> logger;
 
-    void setLogger (std::function<void(const String&)> newLogger) override
+    void setLogger (std::function<void(const Block& block, const String&)> newLogger) override
     {
-        logger = newLogger;
+        logger = std::move (newLogger);
     }
 
     void handleLogMessage (const String& message) const
     {
         if (logger != nullptr)
-            logger (message);
+            logger (*this, message);
     }
 
     //==============================================================================
@@ -384,7 +384,7 @@ public:
         remoteHeap.handleACKFromDevice (*this, packetCounter);
     }
 
-    bool sendFirmwareUpdatePacket (const uint8* data, uint8 size, std::function<void (uint8, uint32)> callback) override
+    bool sendFirmwareUpdatePacket (const uint8* data, uint8 size, std::function<void(uint8, uint32)> callback) override
     {
         firmwarePacketAckCallback = {};
 
