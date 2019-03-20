@@ -27,6 +27,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "InternalFilters.h"
 #include "FilterGraph.h"
+#include <random>
 
 //==============================================================================
 class InternalPlugin   : public AudioPluginInstance
@@ -341,6 +342,140 @@ private:
     Reverb reverb;
 };
 
+class MyThumbCache : public AudioThumbnailCache
+{
+public:
+	MyThumbCache() : AudioThumbnailCache(100) {}
+};
+
+class FilePlayerPlugin;
+
+class FilePlayPluginEditor : public AudioProcessorEditor, public ChangeListener
+{
+public:
+	FilePlayPluginEditor(FilePlayerPlugin& plug);
+	void changeListenerCallback(ChangeBroadcaster* bc) override
+	{
+		repaint();
+	}
+	void paint(Graphics& g) override
+	{
+		g.fillAll(Colours::black);
+		g.setColour(Colours::white);
+		if (m_thumb && m_thumb->getTotalLength() > 0.0)
+		{
+			m_thumb->drawChannels(g, { 0,0,getWidth(),getHeight() }, 0.0, m_thumb->getTotalLength(), 1.0f);
+		}
+	}
+	void mouseDown(const MouseEvent& ev) override;
+	
+private:
+	FilePlayerPlugin& m_fp;
+	TextButton m_importbutton;
+	SharedResourcePointer<MyThumbCache> m_thumbcache;
+	std::unique_ptr<AudioThumbnail> m_thumb;
+};
+
+class FilePlayerPlugin : public InternalPlugin
+{
+public:
+	FilePlayerPlugin(const PluginDescription& descr) : InternalPlugin(descr)
+	{
+		m_randgen = std::mt19937((int)this);
+		m_formatmanager.registerBasicFormats();
+	}
+	~FilePlayerPlugin()
+	{
+		
+	}
+	static String getIdentifier()
+	{
+		return "File Player";
+	}
+
+	static PluginDescription getPluginDescription()
+	{
+		return InternalPlugin::getPluginDescription(getIdentifier(), true, false);
+	}
+	void randomizePlayposition()
+	{
+		std::uniform_int<int64> dist(m_looppoints.getStart(), m_looppoints.getEnd());
+		m_filepos = dist(m_randgen);
+	}
+	void setAudioFileToPlay(File infile)
+	{
+		ScopedLock locker(m_cs);
+		m_reader = std::unique_ptr<AudioFormatReader>(m_formatmanager.createReaderFor(infile));
+		if (m_reader)
+		{
+			m_looppoints = { 0 ,m_reader->lengthInSamples };
+			m_filepos = m_looppoints.getStart();
+		}
+	}
+	void prepareToPlay(double newSampleRate, int) override
+	{
+		File infile("C:\\MusicAudio\\Samples from net\\Elec_Sitar_K2_EXS\\Elec Sitar Loop samples\\Electric Sitar Riffs\\Elec Sitar Riff 01.wav");
+		setAudioFileToPlay(infile);
+	}
+	void releaseResources() override
+	{
+
+	}
+	void processBlock(AudioBuffer<float>& buffer, MidiBuffer& midimessages)
+	{
+		ScopedLock locker(m_cs);
+		buffer.clear();
+		if (m_reader)
+		{
+			m_reader->read(&buffer, 0, buffer.getNumSamples(), m_filepos, true, true);
+			buffer.applyGain(0.25f);
+			m_filepos += buffer.getNumSamples();
+			if (m_filepos >= m_looppoints.getEnd())
+				m_filepos = m_looppoints.getStart();
+		}
+	}
+	bool hasEditor() const override 
+	{ 
+		return true; 
+	}
+	AudioProcessorEditor* createEditor() override
+	{
+		return new FilePlayPluginEditor(*this);
+	}
+	AudioFormatManager m_formatmanager;
+private:
+	std::unique_ptr<AudioFormatReader> m_reader;
+	int64 m_filepos = 0;
+	Range<int64> m_looppoints;
+	std::mt19937 m_randgen;
+	CriticalSection m_cs;
+};
+
+FilePlayPluginEditor::FilePlayPluginEditor(FilePlayerPlugin& fp) : AudioProcessorEditor(fp),
+	m_fp(fp)
+{
+	setSize(500, 200);
+	m_thumb = std::make_unique<AudioThumbnail>(128, m_fp.m_formatmanager, *m_thumbcache);
+	m_thumb->addChangeListener(this);
+	addAndMakeVisible(m_importbutton);
+	m_importbutton.setButtonText("Import...");
+	m_importbutton.setBounds(1, 1, 198, 24);
+	m_importbutton.onClick = [this]()
+	{
+		FileChooser chooser("Choose audio file", File(), "*.wav;*.flac", true);
+		if (chooser.browseForFileToOpen())
+		{
+			m_fp.setAudioFileToPlay(chooser.getResult());
+			m_thumb->setSource(new FileInputSource(chooser.getResult()));
+		}
+	};
+}
+
+void FilePlayPluginEditor::mouseDown(const MouseEvent& ev)
+{
+	//m_fp.randomizePlayposition();
+}
+
 //==============================================================================
 InternalPluginFormat::InternalPluginFormat()
 {
@@ -369,7 +504,7 @@ AudioPluginInstance* InternalPluginFormat::createInstance (const String& name)
 
     if (name == SineWaveSynth::getIdentifier()) return new SineWaveSynth (SineWaveSynth::getPluginDescription());
     if (name == ReverbFilter::getIdentifier())  return new ReverbFilter  (ReverbFilter::getPluginDescription());
-
+	if (name == FilePlayerPlugin::getIdentifier()) return new FilePlayerPlugin(FilePlayerPlugin::getPluginDescription());
     return nullptr;
 }
 
@@ -396,4 +531,5 @@ void InternalPluginFormat::getAllTypes (OwnedArray<PluginDescription>& results)
     results.add (new PluginDescription (midiInDesc));
     results.add (new PluginDescription (SineWaveSynth::getPluginDescription()));
     results.add (new PluginDescription (ReverbFilter::getPluginDescription()));
+	results.add (new PluginDescription(FilePlayerPlugin::getPluginDescription()));
 }

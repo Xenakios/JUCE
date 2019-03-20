@@ -172,7 +172,12 @@ public:
 
     ~PluginWindow() override
     {
-        clearContentComponent();
+		auto proc = node->getProcessor();
+		if (proc->getName().contains("File Player"))
+		{
+			proc->editorBeingDeleted(proc->getActiveEditor());
+		}
+		clearContentComponent();
     }
 
     void moved() override

@@ -162,7 +162,7 @@ PluginWindow* FilterGraph::getOrCreateWindowFor (AudioProcessorGraph::Node* node
         {
             auto description = plugin->getPluginDescription();
 
-            if (description.pluginFormatName == "Internal")
+            if (description.name!="File Player" && description.pluginFormatName == "Internal")
             {
                 getCommandManager().invokeDirectly (CommandIDs::showAudioSettings, false);
                 return nullptr;
