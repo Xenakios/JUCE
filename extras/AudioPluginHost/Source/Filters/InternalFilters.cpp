@@ -350,7 +350,7 @@ public:
 
 class FilePlayerPlugin;
 
-class FilePlayPluginEditor : public AudioProcessorEditor, public ChangeListener
+class FilePlayPluginEditor : public AudioProcessorEditor, public ChangeListener, public MultiTimer, public Value::Listener
 {
 public:
 	FilePlayPluginEditor(FilePlayerPlugin& plug);
@@ -358,15 +358,10 @@ public:
 	{
 		repaint();
 	}
-	void paint(Graphics& g) override
-	{
-		g.fillAll(Colours::black);
-		g.setColour(Colours::white);
-		if (m_thumb && m_thumb->getTotalLength() > 0.0)
-		{
-			m_thumb->drawChannels(g, { 0,0,getWidth(),getHeight() }, 0.0, m_thumb->getTotalLength(), 1.0f);
-		}
-	}
+	void timerCallback(int id) override;
+	void valueChanged(Value& v) override;
+	void paint(Graphics& g) override;
+	
 	void mouseDown(const MouseEvent& ev) override;
 	
 private:
@@ -374,6 +369,7 @@ private:
 	TextButton m_importbutton;
 	SharedResourcePointer<MyThumbCache> m_thumbcache;
 	std::unique_ptr<AudioThumbnail> m_thumb;
+	
 };
 
 class FilePlayerPlugin : public InternalPlugin
@@ -410,6 +406,7 @@ public:
 		{
 			m_looppoints = { 0 ,m_reader->lengthInSamples };
 			m_filepos = m_looppoints.getStart();
+			currentFile = infile.getFullPathName();
 		}
 	}
 	void prepareToPlay(double newSampleRate, int) override
@@ -443,12 +440,21 @@ public:
 		return new FilePlayPluginEditor(*this);
 	}
 	AudioFormatManager m_formatmanager;
+	
+	double getPlayPositionPercent()
+	{
+		if (m_reader == nullptr)
+			return 0.0;
+		return 1.0 / m_reader->lengthInSamples*m_filepos;
+	}
+	Value currentFile;
 private:
 	std::unique_ptr<AudioFormatReader> m_reader;
 	int64 m_filepos = 0;
 	Range<int64> m_looppoints;
 	std::mt19937 m_randgen;
 	CriticalSection m_cs;
+	
 };
 
 FilePlayPluginEditor::FilePlayPluginEditor(FilePlayerPlugin& fp) : AudioProcessorEditor(fp),
@@ -466,9 +472,44 @@ FilePlayPluginEditor::FilePlayPluginEditor(FilePlayerPlugin& fp) : AudioProcesso
 		if (chooser.browseForFileToOpen())
 		{
 			m_fp.setAudioFileToPlay(chooser.getResult());
-			m_thumb->setSource(new FileInputSource(chooser.getResult()));
+			
 		}
 	};
+	m_fp.currentFile.addListener(this);
+	startTimer(1, 100);
+}
+
+void FilePlayPluginEditor::paint(Graphics& g)
+{
+	g.fillAll(Colours::black);
+	if (m_thumb && m_thumb->getTotalLength() > 0.0)
+	{
+		g.setColour(Colours::lightgrey);
+		m_thumb->drawChannels(g, { 0,30,getWidth(),getHeight() - 30 }, 0.0, m_thumb->getTotalLength(), 1.0f);
+		g.setColour(Colours::white);
+		double xcor = jmap<double>(m_fp.getPlayPositionPercent(), 0.0, 1.0, 0.0, getWidth());
+		g.drawLine(xcor, 30.0, xcor, getHeight());
+	}
+}
+
+void FilePlayPluginEditor::valueChanged(Value& v)
+{
+	if (v.refersToSameSourceAs(m_fp.currentFile))
+	{
+		m_thumb->setSource(new FileInputSource(v.toString()));
+	}
+	
+}
+
+void FilePlayPluginEditor::timerCallback(int id)
+{
+	if (id == 0)
+	{
+	}
+	if (id == 1)
+	{
+		repaint();
+	}
 }
 
 void FilePlayPluginEditor::mouseDown(const MouseEvent& ev)
