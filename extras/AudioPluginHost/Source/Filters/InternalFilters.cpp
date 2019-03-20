@@ -386,7 +386,7 @@ public:
 	}
 	void changeListenerCallback(ChangeBroadcaster* cb) override
 	{
-		Logger::writeToLog("parent audio graph changed");
+		//Logger::writeToLog("parent audio graph changed");
 	}
 	Value outputCachedFile;
 	std::vector<RandomAccessNode*> getSourceProcessors()
@@ -433,6 +433,9 @@ public:
 	}
 	void setAudioFileToPlay(File infile)
 	{
+		if (infile == m_curfile)
+			return;
+		Logger::writeToLog("setting audio file " + infile.getFullPathName());
 		ScopedLock locker(m_cs);
 		auto temp = std::unique_ptr<AudioFormatReader>(m_formatmanager.createReaderFor(infile));
 		if (temp)
@@ -441,7 +444,8 @@ public:
 			m_looppoints = { 0 ,m_reader->lengthInSamples };
 			m_filepos = m_looppoints.getStart();
 			outputCachedFile = infile.getFullPathName();
-			updateHostDisplay();
+			m_curfile = infile;
+			audioGraph->sendChangeMessage();
 		}
 		else Logger::writeToLog("Could not open file " + infile.getFullPathName());
 
@@ -452,9 +456,10 @@ protected:
 	int64 m_filepos = 0;
 	Range<int64> m_looppoints;
 	CriticalSection m_cs;
+	File m_curfile;
 };
 
-class ReversingNode : public RandomAccessNode
+class ReversingNode : public RandomAccessNode, public Timer
 {
 public:
 	ReversingNode(const PluginDescription& descr) : RandomAccessNode(descr)
@@ -470,7 +475,12 @@ public:
 	{
 		return InternalPlugin::getPluginDescription(getIdentifier(), false, false);
 	}
-	void prepareToPlay(double sr, int) override
+	void timerCallback() override
+	{
+		processCDP();
+		stopTimer();
+	}
+	void processCDP()
 	{
 		auto sources = getSourceProcessors();
 		for (auto& src : sources)
@@ -498,8 +508,19 @@ public:
 			{
 				Logger::writeToLog("CDP processed OK");
 				setAudioFileToPlay(actoutfile);
+				m_cdp_ready = true;
 			}
 		}
+
+	}
+	void changeListenerCallback(ChangeBroadcaster* cb) override
+	{
+		stopTimer();
+		startTimer(1000);
+	}
+	void prepareToPlay(double sr, int) override
+	{
+		processCDP();
 	}
 	void releaseResources() override
 	{
@@ -518,7 +539,8 @@ public:
 				m_filepos = m_looppoints.getStart();
 		}
 	}
-
+private:
+	bool m_cdp_ready = false;
 };
 
 class FilePlayerPlugin : public RandomAccessNode
