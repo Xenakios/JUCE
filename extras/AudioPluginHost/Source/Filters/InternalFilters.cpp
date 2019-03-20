@@ -401,18 +401,37 @@ public:
 	void setAudioFileToPlay(File infile)
 	{
 		ScopedLock locker(m_cs);
-		m_reader = std::unique_ptr<AudioFormatReader>(m_formatmanager.createReaderFor(infile));
-		if (m_reader)
+		auto temp = std::unique_ptr<AudioFormatReader>(m_formatmanager.createReaderFor(infile));
+		if (temp)
 		{
+			m_reader = std::move(temp);
 			m_looppoints = { 0 ,m_reader->lengthInSamples };
 			m_filepos = m_looppoints.getStart();
 			currentFile = infile.getFullPathName();
+			updateHostDisplay();
+		}
+		else Logger::writeToLog("Could not open file " + infile.getFullPathName());
+		
+	}
+	void getStateInformation(MemoryBlock& block) override
+	{
+		ValueTree vt("fileplayerstate");
+		vt.setProperty("filename", currentFile.getValue(), nullptr);
+		MemoryOutputStream ms(block,true);
+		vt.writeToStream(ms);
+	}
+	void setStateInformation(const void* data, int size) override
+	{
+		ValueTree state = ValueTree::readFromData(data, size);
+		if (state.isValid())
+		{
+			String fn = state.getProperty("filename");
+			setAudioFileToPlay(File(fn));
 		}
 	}
 	void prepareToPlay(double newSampleRate, int) override
 	{
-		File infile("C:\\MusicAudio\\Samples from net\\Elec_Sitar_K2_EXS\\Elec Sitar Loop samples\\Electric Sitar Riffs\\Elec Sitar Riff 01.wav");
-		setAudioFileToPlay(infile);
+		
 	}
 	void releaseResources() override
 	{
@@ -463,6 +482,8 @@ FilePlayPluginEditor::FilePlayPluginEditor(FilePlayerPlugin& fp) : AudioProcesso
 	setSize(500, 200);
 	m_thumb = std::make_unique<AudioThumbnail>(128, m_fp.m_formatmanager, *m_thumbcache);
 	m_thumb->addChangeListener(this);
+	if (m_fp.currentFile.getValue().isVoid()==false)
+		m_thumb->setSource(new FileInputSource(m_fp.currentFile.toString()));
 	addAndMakeVisible(m_importbutton);
 	m_importbutton.setButtonText("Import...");
 	m_importbutton.setBounds(1, 1, 198, 24);
