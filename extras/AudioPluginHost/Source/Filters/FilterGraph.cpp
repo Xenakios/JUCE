@@ -113,7 +113,7 @@ void FilterGraph::addFilterCallback (AudioPluginInstance* instance, const String
         {
             node->properties.set ("x", pos.x);
             node->properties.set ("y", pos.y);
-			instance->audioGraph = &graph;
+			instance->setAudioGraph(&graph);
 			changed();
         }
     }
@@ -392,7 +392,7 @@ void FilterGraph::createNodeFromXml (const XmlElement& xml)
     if (auto* instance = formatManager.createPluginInstance (pd, graph.getSampleRate(),
                                                              graph.getBlockSize(), errorMessage))
     {
-		instance->audioGraph = &graph;
+		instance->setAudioGraph(&graph);
 		if (auto* layoutEntity = xml.getChildByName ("LAYOUT"))
         {
             auto layout = instance->getBusesLayout();

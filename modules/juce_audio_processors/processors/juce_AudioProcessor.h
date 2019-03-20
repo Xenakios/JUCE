@@ -1492,9 +1492,14 @@ public:
 #ifdef REAPER_API_VST3_SUPPORT_AVAILABLE
 	virtual void VST3HostContextAvailable(void*) {}
 #endif
-	AudioProcessorGraph* audioGraph = nullptr;
-protected:
+	virtual void setAudioGraph(AudioProcessorGraph* ag) {}
 	
+	AudioProcessorGraph* getAudioGraph()
+	{
+		return audioGraph;
+	}
+protected:
+	AudioProcessorGraph* audioGraph = nullptr;
 	/** Callback to query if the AudioProcessor supports a specific layout.
 
         This callback is called when the host probes the supported bus layouts via

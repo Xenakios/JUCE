@@ -372,12 +372,21 @@ private:
 	
 };
 
-class RandomAccessNode : public InternalPlugin
+class RandomAccessNode : public InternalPlugin, public ChangeListener
 {
 public:
 	RandomAccessNode(const PluginDescription& desc) : InternalPlugin(desc)
 	{
 		m_formatmanager.registerBasicFormats();
+	}
+	void setAudioGraph(AudioProcessorGraph* ag) override
+	{
+		audioGraph = ag;
+		ag->addChangeListener(this);
+	}
+	void changeListenerCallback(ChangeBroadcaster* cb) override
+	{
+		Logger::writeToLog("parent audio graph changed");
 	}
 	Value outputCachedFile;
 	std::vector<RandomAccessNode*> getSourceProcessors()
@@ -396,6 +405,27 @@ public:
 				if (dest_proc == this && src_proc!=nullptr)
 				{
 					result.push_back(dynamic_cast<RandomAccessNode*>(src_proc));
+				}
+			}
+		}
+		return result;
+	}
+	std::vector<RandomAccessNode*> getDestinationProcessors()
+	{
+		std::vector<RandomAccessNode*> result;
+		auto g = this->audioGraph;
+		if (g)
+		{
+			auto connections = g->getConnections();
+			for (auto& c : connections)
+			{
+				auto dest_id = c.destination.nodeID;
+				auto src_id = c.source.nodeID;
+				auto dest_proc = g->getNodeForId(dest_id)->getProcessor();
+				auto src_proc = g->getNodeForId(src_id)->getProcessor();
+				if (src_proc == this && dest_proc != nullptr)
+				{
+					result.push_back(dynamic_cast<RandomAccessNode*>(dest_proc));
 				}
 			}
 		}
@@ -641,7 +671,7 @@ void FilePlayPluginEditor::timerCallback(int id)
 
 void FilePlayPluginEditor::mouseDown(const MouseEvent& ev)
 {
-	auto g = m_fp.audioGraph;
+	auto g = m_fp.getAudioGraph();
 	if (g)
 	{
 		auto nodes = g->getNodes();
