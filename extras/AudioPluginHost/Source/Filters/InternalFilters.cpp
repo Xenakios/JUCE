@@ -541,9 +541,17 @@ void FilePlayPluginEditor::mouseDown(const MouseEvent& ev)
 	if (g)
 	{
 		auto nodes = g->getNodes();
-		for (auto&e : nodes)
+		auto connections = g->getConnections();
+		for (auto& c : connections)
 		{
-			Logger::writeToLog(e->getProcessor()->getName());
+			auto dest_id = c.destination.nodeID;
+			auto src_id = c.source.nodeID;
+			auto dest_proc = g->getNodeForId(dest_id)->getProcessor();
+			auto src_proc = g->getNodeForId(src_id)->getProcessor();
+			if (src_proc == &m_fp && dest_proc!=nullptr)
+			{
+				Logger::writeToLog(src_proc->getName() + " connects to " + dest_proc->getName());
+			}
 		}
 	}
 }
