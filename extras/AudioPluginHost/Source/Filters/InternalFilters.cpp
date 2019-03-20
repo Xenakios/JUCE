@@ -372,13 +372,132 @@ private:
 	
 };
 
-class FilePlayerPlugin : public InternalPlugin
+class RandomAccessNode : public InternalPlugin
 {
 public:
-	FilePlayerPlugin(const PluginDescription& descr) : InternalPlugin(descr)
+	RandomAccessNode(const PluginDescription& desc) : InternalPlugin(desc)
+	{
+		m_formatmanager.registerBasicFormats();
+	}
+	Value outputCachedFile;
+	std::vector<RandomAccessNode*> getSourceProcessors()
+	{
+		std::vector<RandomAccessNode*> result;
+		auto g = this->audioGraph;
+		if (g)
+		{
+			auto connections = g->getConnections();
+			for (auto& c : connections)
+			{
+				auto dest_id = c.destination.nodeID;
+				auto src_id = c.source.nodeID;
+				auto dest_proc = g->getNodeForId(dest_id)->getProcessor();
+				auto src_proc = g->getNodeForId(src_id)->getProcessor();
+				if (dest_proc == this && src_proc!=nullptr)
+				{
+					result.push_back(dynamic_cast<RandomAccessNode*>(src_proc));
+				}
+			}
+		}
+		return result;
+	}
+	void setAudioFileToPlay(File infile)
+	{
+		ScopedLock locker(m_cs);
+		auto temp = std::unique_ptr<AudioFormatReader>(m_formatmanager.createReaderFor(infile));
+		if (temp)
+		{
+			m_reader = std::move(temp);
+			m_looppoints = { 0 ,m_reader->lengthInSamples };
+			m_filepos = m_looppoints.getStart();
+			outputCachedFile = infile.getFullPathName();
+			updateHostDisplay();
+		}
+		else Logger::writeToLog("Could not open file " + infile.getFullPathName());
+
+	}
+	AudioFormatManager m_formatmanager;
+protected:
+	std::unique_ptr<AudioFormatReader> m_reader;
+	int64 m_filepos = 0;
+	Range<int64> m_looppoints;
+	CriticalSection m_cs;
+};
+
+class ReversingNode : public RandomAccessNode
+{
+public:
+	ReversingNode(const PluginDescription& descr) : RandomAccessNode(descr)
+	{
+
+	}
+	static String getIdentifier()
+	{
+		return "Reverse";
+	}
+
+	static PluginDescription getPluginDescription()
+	{
+		return InternalPlugin::getPluginDescription(getIdentifier(), false, false);
+	}
+	void prepareToPlay(double sr, int) override
+	{
+		auto sources = getSourceProcessors();
+		for (auto& src : sources)
+		{
+			String srcfn = src->outputCachedFile.toString();
+			Logger::writeToLog("Reverse should reverse " + srcfn);
+			// C:\\PortableApps\\cdpr700-InstallPC\\_cdp\\_cdprogs\\modify.exe
+			// C:\MusicAudio\sourcesamples\jgraphtest
+			ChildProcess cp;
+			StringArray args;
+			args.add("C:\\PortableApps\\cdpr700-InstallPC\\_cdp\\_cdprogs\\modify.exe");
+			args.add("radical");
+			args.add("1");
+			args.add(srcfn);
+			File outfile("C:\\MusicAudio\\sourcesamples\\jgraphtest\\reverse.wav");
+			File actoutfile = outfile.getNonexistentSibling();
+			args.add(actoutfile.getFullPathName());
+			cp.start(args);
+			cp.waitForProcessToFinish(3000);
+			if (cp.getExitCode() != 0)
+			{
+				Logger::writeToLog(cp.readAllProcessOutput());
+			}
+			else
+			{
+				Logger::writeToLog("CDP processed OK");
+				setAudioFileToPlay(actoutfile);
+			}
+		}
+	}
+	void releaseResources() override
+	{
+
+	}
+	void processBlock(AudioBuffer<float>& buffer, MidiBuffer& midimessages)
+	{
+		ScopedLock locker(m_cs);
+		buffer.clear();
+		if (m_reader)
+		{
+			m_reader->read(&buffer, 0, buffer.getNumSamples(), m_filepos, true, true);
+			buffer.applyGain(0.25f);
+			m_filepos += buffer.getNumSamples();
+			if (m_filepos >= m_looppoints.getEnd())
+				m_filepos = m_looppoints.getStart();
+		}
+	}
+
+};
+
+class FilePlayerPlugin : public RandomAccessNode
+{
+public:
+	FilePlayerPlugin(const PluginDescription& descr) : RandomAccessNode(descr)
 	{
 		m_randgen = std::mt19937((int)this);
-		m_formatmanager.registerBasicFormats();
+		
 		
 	}
 	~FilePlayerPlugin()
@@ -399,25 +518,11 @@ public:
 		std::uniform_int<int64> dist(m_looppoints.getStart(), m_looppoints.getEnd());
 		m_filepos = dist(m_randgen);
 	}
-	void setAudioFileToPlay(File infile)
-	{
-		ScopedLock locker(m_cs);
-		auto temp = std::unique_ptr<AudioFormatReader>(m_formatmanager.createReaderFor(infile));
-		if (temp)
-		{
-			m_reader = std::move(temp);
-			m_looppoints = { 0 ,m_reader->lengthInSamples };
-			m_filepos = m_looppoints.getStart();
-			currentFile = infile.getFullPathName();
-			updateHostDisplay();
-		}
-		else Logger::writeToLog("Could not open file " + infile.getFullPathName());
-		
-	}
+	
 	void getStateInformation(MemoryBlock& block) override
 	{
 		ValueTree vt("fileplayerstate");
-		vt.setProperty("filename", currentFile.getValue(), nullptr);
+		vt.setProperty("filename", outputCachedFile.getValue(), nullptr);
 		MemoryOutputStream ms(block,true);
 		vt.writeToStream(ms);
 	}
@@ -459,7 +564,7 @@ public:
 	{
 		return new FilePlayPluginEditor(*this);
 	}
-	AudioFormatManager m_formatmanager;
+	
 	
 	double getPlayPositionPercent()
 	{
@@ -467,13 +572,12 @@ public:
 			return 0.0;
 		return 1.0 / m_reader->lengthInSamples*m_filepos;
 	}
-	Value currentFile;
+	
 private:
-	std::unique_ptr<AudioFormatReader> m_reader;
-	int64 m_filepos = 0;
-	Range<int64> m_looppoints;
+	
+	
 	std::mt19937 m_randgen;
-	CriticalSection m_cs;
+	
 	
 };
 
@@ -484,8 +588,8 @@ FilePlayPluginEditor::FilePlayPluginEditor(FilePlayerPlugin& fp) : AudioProcesso
 	setSize(500, 200);
 	m_thumb = std::make_unique<AudioThumbnail>(128, m_fp.m_formatmanager, *m_thumbcache);
 	m_thumb->addChangeListener(this);
-	if (m_fp.currentFile.getValue().isVoid()==false)
-		m_thumb->setSource(new FileInputSource(m_fp.currentFile.toString()));
+	if (m_fp.outputCachedFile.getValue().isVoid()==false)
+		m_thumb->setSource(new FileInputSource(m_fp.outputCachedFile.toString()));
 	addAndMakeVisible(m_importbutton);
 	m_importbutton.setButtonText("Import...");
 	m_importbutton.setBounds(1, 1, 198, 24);
@@ -498,7 +602,7 @@ FilePlayPluginEditor::FilePlayPluginEditor(FilePlayerPlugin& fp) : AudioProcesso
 			
 		}
 	};
-	m_fp.currentFile.addListener(this);
+	m_fp.outputCachedFile.addListener(this);
 	startTimer(1, 100);
 }
 
@@ -517,7 +621,7 @@ void FilePlayPluginEditor::paint(Graphics& g)
 
 void FilePlayPluginEditor::valueChanged(Value& v)
 {
-	if (v.refersToSameSourceAs(m_fp.currentFile))
+	if (v.refersToSameSourceAs(m_fp.outputCachedFile))
 	{
 		m_thumb->setSource(new FileInputSource(v.toString()));
 	}
@@ -548,9 +652,9 @@ void FilePlayPluginEditor::mouseDown(const MouseEvent& ev)
 			auto src_id = c.source.nodeID;
 			auto dest_proc = g->getNodeForId(dest_id)->getProcessor();
 			auto src_proc = g->getNodeForId(src_id)->getProcessor();
-			if (src_proc == &m_fp && dest_proc!=nullptr)
+			if (dest_proc == &m_fp)
 			{
-				Logger::writeToLog(src_proc->getName() + " connects to " + dest_proc->getName());
+				Logger::writeToLog(dest_proc->getName() + " connects to " + src_proc->getName());
 			}
 		}
 	}
@@ -585,6 +689,7 @@ AudioPluginInstance* InternalPluginFormat::createInstance (const String& name)
     if (name == SineWaveSynth::getIdentifier()) return new SineWaveSynth (SineWaveSynth::getPluginDescription());
     if (name == ReverbFilter::getIdentifier())  return new ReverbFilter  (ReverbFilter::getPluginDescription());
 	if (name == FilePlayerPlugin::getIdentifier()) return new FilePlayerPlugin(FilePlayerPlugin::getPluginDescription());
+	if (name == ReversingNode::getIdentifier()) return new ReversingNode(ReversingNode::getPluginDescription());
     return nullptr;
 }
 
@@ -611,5 +716,6 @@ void InternalPluginFormat::getAllTypes (OwnedArray<PluginDescription>& results)
     results.add (new PluginDescription (midiInDesc));
     results.add (new PluginDescription (SineWaveSynth::getPluginDescription()));
     results.add (new PluginDescription (ReverbFilter::getPluginDescription()));
-	results.add (new PluginDescription(FilePlayerPlugin::getPluginDescription()));
+	results.add(new PluginDescription(FilePlayerPlugin::getPluginDescription()));
+	results.add(new PluginDescription(ReversingNode::getPluginDescription()));
 }
