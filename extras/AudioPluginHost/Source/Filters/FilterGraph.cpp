@@ -84,7 +84,7 @@ void FilterGraph::addPlugin (const PluginDescription& desc, Point<double> p)
 
         void completionCallback (AudioPluginInstance* instance, const String& error) override
         {
-            owner.addFilterCallback (instance, error, position);
+			owner.addFilterCallback (instance, error, position);
         }
 
         FilterGraph& owner;
@@ -113,7 +113,8 @@ void FilterGraph::addFilterCallback (AudioPluginInstance* instance, const String
         {
             node->properties.set ("x", pos.x);
             node->properties.set ("y", pos.y);
-            changed();
+			instance->audioGraph = &graph;
+			changed();
         }
     }
 }
@@ -391,7 +392,8 @@ void FilterGraph::createNodeFromXml (const XmlElement& xml)
     if (auto* instance = formatManager.createPluginInstance (pd, graph.getSampleRate(),
                                                              graph.getBlockSize(), errorMessage))
     {
-        if (auto* layoutEntity = xml.getChildByName ("LAYOUT"))
+		instance->audioGraph = &graph;
+		if (auto* layoutEntity = xml.getChildByName ("LAYOUT"))
         {
             auto layout = instance->getBusesLayout();
 

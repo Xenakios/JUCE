@@ -43,6 +43,9 @@ namespace juce
 
     @tags{Audio}
 */
+
+class AudioProcessorGraph;
+
 class JUCE_API  AudioProcessor
 {
 protected:
@@ -1489,7 +1492,7 @@ public:
 #ifdef REAPER_API_VST3_SUPPORT_AVAILABLE
 	virtual void VST3HostContextAvailable(void*) {}
 #endif
-	
+	AudioProcessorGraph* audioGraph = nullptr;
 protected:
 	
 	/** Callback to query if the AudioProcessor supports a specific layout.

@@ -379,6 +379,7 @@ public:
 	{
 		m_randgen = std::mt19937((int)this);
 		m_formatmanager.registerBasicFormats();
+		
 	}
 	~FilePlayerPlugin()
 	{
@@ -479,6 +480,7 @@ private:
 FilePlayPluginEditor::FilePlayPluginEditor(FilePlayerPlugin& fp) : AudioProcessorEditor(fp),
 	m_fp(fp)
 {
+	
 	setSize(500, 200);
 	m_thumb = std::make_unique<AudioThumbnail>(128, m_fp.m_formatmanager, *m_thumbcache);
 	m_thumb->addChangeListener(this);
@@ -505,7 +507,7 @@ void FilePlayPluginEditor::paint(Graphics& g)
 	g.fillAll(Colours::black);
 	if (m_thumb && m_thumb->getTotalLength() > 0.0)
 	{
-		g.setColour(Colours::lightgrey);
+		g.setColour(Colours::darkgrey);
 		m_thumb->drawChannels(g, { 0,30,getWidth(),getHeight() - 30 }, 0.0, m_thumb->getTotalLength(), 1.0f);
 		g.setColour(Colours::white);
 		double xcor = jmap<double>(m_fp.getPlayPositionPercent(), 0.0, 1.0, 0.0, getWidth());
@@ -535,7 +537,15 @@ void FilePlayPluginEditor::timerCallback(int id)
 
 void FilePlayPluginEditor::mouseDown(const MouseEvent& ev)
 {
-	//m_fp.randomizePlayposition();
+	auto g = m_fp.audioGraph;
+	if (g)
+	{
+		auto nodes = g->getNodes();
+		for (auto&e : nodes)
+		{
+			Logger::writeToLog(e->getProcessor()->getName());
+		}
+	}
 }
 
 //==============================================================================
