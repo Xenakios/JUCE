@@ -123,6 +123,7 @@ static void createPluginDescription (PluginDescription& description,
         description.category = toString (info.category).trim();
 
     description.isInstrument = description.category.containsIgnoreCase ("Instrument"); // This seems to be the only way to find that out! ARGH!
+	
 }
 
 static int getNumSingleDirectionBusesFor (Vst::IComponent* component,
@@ -1526,8 +1527,7 @@ struct VST3ComponentHolder
                                      info, info2.get(), infoW.get(),
                                      totalNumInputChannels,
                                      totalNumOutputChannels);
-
-            return;
+			return;
         }
 
         jassertfalse;
