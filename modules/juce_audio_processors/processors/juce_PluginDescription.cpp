@@ -54,7 +54,8 @@ PluginDescription::PluginDescription (const PluginDescription& other)
       isInstrument (other.isInstrument),
       numInputChannels (other.numInputChannels),
       numOutputChannels (other.numOutputChannels),
-      hasSharedContainer (other.hasSharedContainer)
+      hasSharedContainer (other.hasSharedContainer),
+	  numPrograms(other.numPrograms)
 {
 }
 
@@ -74,7 +75,7 @@ PluginDescription& PluginDescription::operator= (const PluginDescription& other)
     numInputChannels = other.numInputChannels;
     numOutputChannels = other.numOutputChannels;
     hasSharedContainer = other.hasSharedContainer;
-
+	numPrograms = other.numPrograms;
     return *this;
 }
 
@@ -119,7 +120,7 @@ XmlElement* PluginDescription::createXml() const
     e->setAttribute ("numInputs", numInputChannels);
     e->setAttribute ("numOutputs", numOutputChannels);
     e->setAttribute ("isShell", hasSharedContainer);
-
+	e->setAttribute("numPrograms", numPrograms);
     return e;
 }
 
@@ -141,7 +142,7 @@ bool PluginDescription::loadFromXml (const XmlElement& xml)
         numInputChannels    = xml.getIntAttribute ("numInputs");
         numOutputChannels   = xml.getIntAttribute ("numOutputs");
         hasSharedContainer  = xml.getBoolAttribute ("isShell", false);
-
+		numPrograms = xml.getIntAttribute("numPrograms");
         return true;
     }
 

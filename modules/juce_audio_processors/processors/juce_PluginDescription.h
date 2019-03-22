@@ -149,7 +149,7 @@ public:
     */
     bool loadFromXml (const XmlElement& xml);
 
-
+	int numPrograms = 0;
 private:
     //==============================================================================
     JUCE_LEAK_DETECTOR (PluginDescription)

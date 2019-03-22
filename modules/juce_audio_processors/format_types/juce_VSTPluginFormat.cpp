@@ -1192,6 +1192,7 @@ struct VSTPluginInstance     : public AudioPluginInstance,
         desc.numInputChannels = getTotalNumInputChannels();
         desc.numOutputChannels = getTotalNumOutputChannels();
         desc.isInstrument = (vstEffect != nullptr && (vstEffect->flags & Vst2::effFlagsIsSynth) != 0);
+		desc.numPrograms = vstEffect->numPrograms;
     }
 
     bool initialiseEffect (double initialSampleRate, int initialBlockSize)
