@@ -80,6 +80,8 @@ String ChildProcess::readAllProcessOutput()
     return result.toString();
 }
 
+
+//==============================================================================
 //==============================================================================
 #if JUCE_UNIT_TESTS
 
@@ -101,8 +103,8 @@ public:
         expect (p.start ("ls /"));
        #endif
 
-        //String output (p.readAllProcessOutput());
-        //expect (output.isNotEmpty());
+        auto output = p.readAllProcessOutput();
+        expect (output.isNotEmpty());
       #endif
     }
 };

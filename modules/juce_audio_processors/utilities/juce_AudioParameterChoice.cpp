@@ -69,11 +69,14 @@ AudioParameterChoice& AudioParameterChoice::operator= (int newValue)
     return *this;
 }
 
+
+//==============================================================================
+//==============================================================================
 #if JUCE_UNIT_TESTS
 
-static struct AudioParameterChoiceTests final   : public UnitTest
+struct AudioParameterChoiceTests  : public UnitTest
 {
-    AudioParameterChoiceTests() : UnitTest ("AudioParameterChoice", "AudioProcessor parameters") {}
+    AudioParameterChoiceTests() : UnitTest ("AudioParameterChoice", "AudioProcessor Parameters") {}
 
     void runTest() override
     {
@@ -112,7 +115,9 @@ static struct AudioParameterChoiceTests final   : public UnitTest
         }
     }
 
-} audioParameterChoiceTests;
+};
+
+static AudioParameterChoiceTests audioParameterChoiceTests;
 
 #endif
 

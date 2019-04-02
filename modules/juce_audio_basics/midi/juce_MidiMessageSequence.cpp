@@ -344,11 +344,14 @@ void MidiMessageSequence::createControllerUpdatesForTime (int channelNumber, dou
     }
 }
 
+
+//==============================================================================
+//==============================================================================
 #if JUCE_UNIT_TESTS
 
-struct MidiMessageSequenceTest  : public juce::UnitTest
+struct MidiMessageSequenceTest  : public UnitTest
 {
-    MidiMessageSequenceTest() : juce::UnitTest ("MidiMessageSequence") {}
+    MidiMessageSequenceTest() : juce::UnitTest ("MidiMessageSequence", "MIDI/MPE") {}
 
     void runTest() override
     {

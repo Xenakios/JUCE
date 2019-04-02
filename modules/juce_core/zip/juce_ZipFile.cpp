@@ -638,12 +638,14 @@ bool ZipFile::Builder::writeToStream (OutputStream& target, double* const progre
     return true;
 }
 
+
+//==============================================================================
 //==============================================================================
 #if JUCE_UNIT_TESTS
 
 struct ZIPTests   : public UnitTest
 {
-    ZIPTests()   : UnitTest ("ZIP") {}
+    ZIPTests()   : UnitTest ("ZIP", "Compression") {}
 
     void runTest() override
     {

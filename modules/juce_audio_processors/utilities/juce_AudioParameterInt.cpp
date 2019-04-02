@@ -69,11 +69,14 @@ AudioParameterInt& AudioParameterInt::operator= (int newValue)
     return *this;
 }
 
+
+//==============================================================================
+//==============================================================================
 #if JUCE_UNIT_TESTS
 
-static struct AudioParameterIntTests final   : public UnitTest
+struct AudioParameterIntTests  : public UnitTest
 {
-    AudioParameterIntTests() : UnitTest ("AudioParameterInt", "AudioProcessor parameters") {}
+    AudioParameterIntTests() : UnitTest ("AudioParameterInt", "AudioProcessor Parameters") {}
 
     void runTest() override
     {
@@ -117,7 +120,9 @@ static struct AudioParameterIntTests final   : public UnitTest
             expectEquals (intParam.get(), 2);
         }
     }
-} audioParameterIntTests;
+};
+
+static AudioParameterIntTests audioParameterIntTests;
 
 #endif
 
