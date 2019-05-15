@@ -370,9 +370,13 @@ protected:
     virtual bool mouseDownOnKey (int midiNoteNumber, const MouseEvent& e);
 
     /** Callback when the mouse is dragged from one key onto another.
+
+        Return true if you want the drag to trigger the new note, or false if you
+        want to handle it yourself and not have the note played.
+
         @see mouseDownOnKey
     */
-    virtual void mouseDraggedToKey (int midiNoteNumber, const MouseEvent& e);
+    virtual bool mouseDraggedToKey (int midiNoteNumber, const MouseEvent& e);
 
     /** Callback when the mouse is released from a key.
         @see mouseDownOnKey
@@ -391,10 +395,8 @@ protected:
 
     /** Returns the rectangle for a given key if within the displayable range */
     Rectangle<float> getRectangleForKey (int midiNoteNumber) const;
-	void updateNoteUnderMouse(Point<float>, bool isDown, int fingerNum);
-	void updateNoteUnderMouse(const MouseEvent&, bool isDown);
-	int xyToNote(Point<float>, float& mousePositionVelocity);
-	bool canScroll = true, useMousePositionForVelocity = true, shouldCheckMousePos = false;
+
+
 private:
     //==============================================================================
     struct UpDownButton;
@@ -416,7 +418,7 @@ private:
 
     int rangeStart = 0, rangeEnd = 127;
     float firstKey = 12 * 4.0f;
-    
+    bool canScroll = true, useMousePositionForVelocity = true;
     std::unique_ptr<Button> scrollDown, scrollUp;
 
     Array<KeyPress> keyPresses;
@@ -424,11 +426,11 @@ private:
     int keyMappingOctave = 6, octaveNumForMiddleC = 3;
 
     Range<float> getKeyPos (int midiNoteNumber) const;
-    
+    int xyToNote (Point<float>, float& mousePositionVelocity);
     int remappedXYToNote (Point<float>, float& mousePositionVelocity) const;
     void resetAnyKeysInUse();
-    
-    
+    void updateNoteUnderMouse (Point<float>, bool isDown, int fingerNum);
+    void updateNoteUnderMouse (const MouseEvent&, bool isDown);
     void repaintNote (int midiNoteNumber);
     void setLowestVisibleKeyFloat (float noteNumber);
 

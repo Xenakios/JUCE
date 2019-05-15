@@ -355,7 +355,7 @@ static XmlElement* createNodeXml (AudioProcessorGraph::Node* const node) noexcep
         {
             PluginDescription pd;
             plugin->fillInPluginDescription (pd);
-            e->addChildElement (pd.createXml());
+            e->addChildElement (pd.createXml().release());
         }
 
         {
@@ -439,9 +439,9 @@ void FilterGraph::createNodeFromXml (const XmlElement& xml)
     }
 }
 
-XmlElement* FilterGraph::createXml() const
+std::unique_ptr<XmlElement> FilterGraph::createXml() const
 {
-    auto* xml = new XmlElement ("FILTERGRAPH");
+    auto xml = std::make_unique<XmlElement> ("FILTERGRAPH");
 
     for (auto* node : graph.getNodes())
         xml->addChildElement (createNodeXml (node));
