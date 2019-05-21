@@ -3057,6 +3057,8 @@ private:
 
         Point<int> dropPos ((int) clientMsg.data.l[2] >> 16,
                             (int) clientMsg.data.l[2] & 0xffff);
+
+        dropPos = Desktop::getInstance().getDisplays().physicalToLogical (dropPos);
         dropPos -= bounds.getPosition();
 
         Atom targetAction = atoms->XdndActionCopy;
@@ -3440,10 +3442,13 @@ void Displays::findDisplays (float masterScale)
 
         auto getWorkAreaPropertyData = [&] (int screenNum) -> unsigned char*
         {
-            GetXProperty prop (display, RootWindow (display, screenNum), hints, 0, 4, false, XA_CARDINAL);
+            if (hints != None)
+            {
+                GetXProperty prop (display, RootWindow (display, screenNum), hints, 0, 4, false, XA_CARDINAL);
 
-            if (prop.success && prop.actualType == XA_CARDINAL && prop.actualFormat == 32 && prop.numItems == 4)
-                return prop.data;
+                if (prop.success && prop.actualType == XA_CARDINAL && prop.actualFormat == 32 && prop.numItems == 4)
+                    return prop.data;
+            }
 
             return nullptr;
         };
