@@ -1392,7 +1392,8 @@ Component* Component::getComponentAt (int x, int y)
 //==============================================================================
 void Component::addChildComponent (Component& child, int zOrder)
 {
-    // if component methods are being called from threads other than the message
+	jassert(this != nullptr); // better not add child components to a non-existing Component!
+	// if component methods are being called from threads other than the message
     // thread, you'll need to use a MessageManagerLock object to make sure it's thread-safe.
     JUCE_ASSERT_MESSAGE_MANAGER_IS_LOCKED_OR_OFFSCREEN
 

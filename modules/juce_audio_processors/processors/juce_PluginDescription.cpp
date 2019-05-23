@@ -27,58 +27,6 @@
 namespace juce
 {
 
-PluginDescription::PluginDescription()
-    : uid (0),
-      isInstrument (false),
-      numInputChannels (0),
-      numOutputChannels (0),
-      hasSharedContainer (false)
-{
-}
-
-PluginDescription::~PluginDescription()
-{
-}
-
-PluginDescription::PluginDescription (const PluginDescription& other)
-    : name (other.name),
-      descriptiveName (other.descriptiveName),
-      pluginFormatName (other.pluginFormatName),
-      category (other.category),
-      manufacturerName (other.manufacturerName),
-      version (other.version),
-      fileOrIdentifier (other.fileOrIdentifier),
-      lastFileModTime (other.lastFileModTime),
-      lastInfoUpdateTime (other.lastInfoUpdateTime),
-      uid (other.uid),
-      isInstrument (other.isInstrument),
-      numInputChannels (other.numInputChannels),
-      numOutputChannels (other.numOutputChannels),
-      hasSharedContainer (other.hasSharedContainer),
-	  numPrograms(other.numPrograms)
-{
-}
-
-PluginDescription& PluginDescription::operator= (const PluginDescription& other)
-{
-    name = other.name;
-    descriptiveName = other.descriptiveName;
-    pluginFormatName = other.pluginFormatName;
-    category = other.category;
-    manufacturerName = other.manufacturerName;
-    version = other.version;
-    fileOrIdentifier = other.fileOrIdentifier;
-    uid = other.uid;
-    isInstrument = other.isInstrument;
-    lastFileModTime = other.lastFileModTime;
-    lastInfoUpdateTime = other.lastInfoUpdateTime;
-    numInputChannels = other.numInputChannels;
-    numOutputChannels = other.numOutputChannels;
-    hasSharedContainer = other.hasSharedContainer;
-	numPrograms = other.numPrograms;
-    return *this;
-}
-
 bool PluginDescription::isDuplicateOf (const PluginDescription& other) const noexcept
 {
     return fileOrIdentifier == other.fileOrIdentifier
@@ -122,7 +70,7 @@ std::unique_ptr<XmlElement> PluginDescription::createXml() const
     e->setAttribute ("numInputs", numInputChannels);
     e->setAttribute ("numOutputs", numOutputChannels);
     e->setAttribute ("isShell", hasSharedContainer);
-	e->setAttribute("numPrograms", numPrograms);
+
     return e;
 }
 
@@ -144,7 +92,7 @@ bool PluginDescription::loadFromXml (const XmlElement& xml)
         numInputChannels    = xml.getIntAttribute ("numInputs");
         numOutputChannels   = xml.getIntAttribute ("numOutputs");
         hasSharedContainer  = xml.getBoolAttribute ("isShell", false);
-		numPrograms = xml.getIntAttribute("numPrograms");
+
         return true;
     }
 
