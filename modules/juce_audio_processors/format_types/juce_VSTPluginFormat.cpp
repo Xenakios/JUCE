@@ -1001,6 +1001,16 @@ struct VSTPluginInstance     : public AudioPluginInstance,
         if (auto* xml = vstModule->vstXml.get())
             xmlInfo.reset (VSTXMLInfo::createFor (*xml));
 
+        refreshParameterList();
+
+        vstSupportsBypass = (pluginCanDo ("bypass") > 0);
+        setRateAndBufferSizeDetails (sampleRateToUse, blockSizeToUse);
+    }
+
+    void refreshParameterList() override
+    {
+        AudioProcessorParameterGroup newParameterTree;
+
         for (int i = 0; i < vstEffect->numParams; ++i)
         {
             String paramName;
@@ -1065,21 +1075,12 @@ struct VSTPluginInstance     : public AudioPluginInstance,
                 }
             }
 
-            addParameter (new VSTParameter (*this,
-                                            paramName,
-                                            shortParamNames,
-                                            defaultValue,
-                                            label,
-                                            isAutomatable,
-                                            isDiscrete,
-                                            numSteps,
-                                            isBoolSwitch,
-                                            parameterValueStrings,
-                                            valueType));
+            newParameterTree.addChild (std::make_unique<VSTParameter> (*this, paramName, shortParamNames, defaultValue,
+                                                                       label, isAutomatable, isDiscrete, numSteps,
+                                                                       isBoolSwitch, parameterValueStrings, valueType));
         }
 
-        vstSupportsBypass = (pluginCanDo ("bypass") > 0);
-        setRateAndBufferSizeDetails (sampleRateToUse, blockSizeToUse);
+        setParameterTree (std::move (newParameterTree));
     }
 
     ~VSTPluginInstance() override
