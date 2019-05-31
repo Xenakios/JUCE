@@ -1,6 +1,14 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include <algorithm>
+
+template<typename Cont, typename F>
+inline void erase(Cont& c, F f)
+{
+	c.erase(std::remove_if(std::begin(c),
+		std::end(c), f), std::end(c));
+}
 
 class EnvelopePoint
 {
@@ -18,10 +26,50 @@ class Envelope
 {
 public:
 	Envelope()
+	{}
+	Envelope(std::initializer_list<EnvelopePoint> points) : m_points(points) 
 	{
-
+		sortPoints();
 	}
-	Envelope(std::initializer_list<EnvelopePoint> points) : m_points(points) {}
+	void clearAllPoints()
+	{
+		m_points.clear();
+	}
+	void addPoint(EnvelopePoint pt, bool nosort=false)
+	{
+		m_points.push_back(pt);
+		if (nosort==false)
+			sortPoints();
+	}
+	void addPoints(std::initializer_list<EnvelopePoint> pts)
+	{
+		for (const EnvelopePoint e : pts)
+		{
+			m_points.push_back(e);
+		}
+		sortPoints();
+	}
+	void removePoint(int index)
+	{
+		if (index>=0 && index<m_points.size())
+			m_points.erase(m_points.begin() + index);
+	}
+	void removePointsInTimeRange(double t0, double t1)
+	{
+		erase(m_points, [t0, t1](const EnvelopePoint& a) { return a.getX() >= t0 && a.getX() <= t1; });
+	}
+	template<typename F>
+	void removePointsConditionally(F f)
+	{
+		erase(m_points, f);
+	}
+	void sortPoints()
+	{
+		std::stable_sort(m_points.begin(), m_points.end(), [](const EnvelopePoint& a, const EnvelopePoint& b) 
+		{
+			return a.getX() < b.getX();
+		});
+	}
 	// Not super efficient, if performance is really wanted, should implement a separate envelope playback object
 	// that internally keeps track of the current point index etc...
 	double getValueAtTime(double time) const
@@ -55,6 +103,8 @@ public:
 		}
 		return 0.0;
 	}
+	// Not necessarily very efficient either, but at least the starting envelope point
+	// is searched for only once...
 	void applyToBuffer(double* buf, int bufsize, double t0, double t1, Range<double> limitrange = {}) const
 	{
 		int curnode = -1;
@@ -125,6 +175,7 @@ inline T identity(T x)
 	return x;
 }
 
+// Handy function to keep the CPU working... :-)
 static int64_t CPU_waster(std::mt19937& rng, double durationtowaste)
 {
 	std::uniform_real_distribution<double> dist(-1.0, 1.0);
