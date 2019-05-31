@@ -22,6 +22,17 @@ private:
 	double m_y = 0.0;
 };
 
+struct ValueBetween
+{
+	double m_a = 0.0;
+	double m_b = 0.0;
+	ValueBetween(double a, double b) : m_a(a), m_b(b) {}
+	bool operator()(EnvelopePoint& pt) const
+	{
+		return pt.getY() >= m_a && pt.getY() < m_b;
+	}
+};
+
 class Envelope
 {
 public:
@@ -163,6 +174,13 @@ public:
 		for (auto& e : m_points)
 		{
 			e = { e.getX()*sx,e.getY() };
+		}
+	}
+	void scaleAndShiftValues(double sy, double shifty)
+	{
+		for (auto& e : m_points)
+		{
+			e = { e.getX(),sy*e.getY()+shifty };
 		}
 	}
 private:
