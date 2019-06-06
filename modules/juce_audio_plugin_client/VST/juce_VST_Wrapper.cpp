@@ -92,8 +92,8 @@
 
 namespace Vst2
 {
-#include "vst2.x/aeffect.h"
-#include "vst2.x/aeffectx.h"
+#include "pluginterfaces/vst2.x/aeffect.h"
+#include "pluginterfaces/vst2.x/aeffectx.h"
 }
 
 using namespace juce;
