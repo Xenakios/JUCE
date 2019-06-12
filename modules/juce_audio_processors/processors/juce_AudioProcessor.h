@@ -1439,8 +1439,8 @@ private:
     {
         Array<InOutChannelPair> layouts;
 
-        for (int i = 0; i < numLayouts; ++i)
-            layouts.add (InOutChannelPair (configuration[i]));
+        for (size_t i = 0; i < numLayouts; ++i)
+            layouts.add (InOutChannelPair (configuration[(int) i]));
 
         return layouts;
     }
