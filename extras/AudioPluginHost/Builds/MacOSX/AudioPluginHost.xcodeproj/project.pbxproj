@@ -792,11 +792,7 @@
 				);
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
-<<<<<<< HEAD
 					"$(HOME)/SDKs/VST_SDK/VST3_SDK",
-=======
-					"../../../../modules/juce_audio_processors/format_types/VST3_SDK",
->>>>>>> 9275feeef20343229a6c7e780fe713cbf7772409
 					"../../JuceLibraryCode",
 					"../../../../modules",
 					"$(inherited)",
@@ -841,11 +837,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
-<<<<<<< HEAD
 					"$(HOME)/SDKs/VST_SDK/VST3_SDK",
-=======
-					"../../../../modules/juce_audio_processors/format_types/VST3_SDK",
->>>>>>> 9275feeef20343229a6c7e780fe713cbf7772409
 					"../../JuceLibraryCode",
 					"../../../../modules",
 					"$(inherited)",
