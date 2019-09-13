@@ -1104,12 +1104,16 @@ public:
             deleteEditor (true);
         }
 
-        if (chunkMemoryTime > 0
-             && chunkMemoryTime < juce::Time::getApproximateMillisecondCounter() - 2000
-             && ! recursionCheck)
         {
-            chunkMemory.reset();
-            chunkMemoryTime = 0;
+            ScopedLock lock (stateInformationLock);
+
+            if (chunkMemoryTime > 0
+                 && chunkMemoryTime < juce::Time::getApproximateMillisecondCounter() - 2000
+                 && ! recursionCheck)
+            {
+                chunkMemory.reset();
+                chunkMemoryTime = 0;
+            }
         }
 
         if (editorComp != nullptr)
@@ -1851,7 +1855,9 @@ private:
         auto data = (void**) args.ptr;
         bool onlyStoreCurrentProgramData = (args.index != 0);
 
+        ScopedLock lock (stateInformationLock);
         chunkMemory.reset();
+
         if (onlyStoreCurrentProgramData)
             processor->getCurrentProgramStateInformation (chunkMemory);
         else
@@ -1874,15 +1880,19 @@ private:
             int32 byteSize = (int32) args.value;
             bool onlyRestoreCurrentProgramData = (args.index != 0);
 
-            chunkMemory.reset();
-            chunkMemoryTime = 0;
-
-            if (byteSize > 0 && data != nullptr)
             {
-                if (onlyRestoreCurrentProgramData)
-                    processor->setCurrentProgramStateInformation (data, byteSize);
-                else
-                    processor->setStateInformation (data, byteSize);
+                ScopedLock lock (stateInformationLock);
+
+                chunkMemory.reset();
+                chunkMemoryTime = 0;
+
+                if (byteSize > 0 && data != nullptr)
+                {
+                    if (onlyRestoreCurrentProgramData)
+                        processor->setCurrentProgramStateInformation (data, byteSize);
+                    else
+                        processor->setStateInformation (data, byteSize);
+                }
             }
         }
 
@@ -2266,8 +2276,9 @@ private:
     double sampleRate = 44100.0;
     int32 blockSize = 1024;
     Vst2::AEffect vstEffect;
-    juce::MemoryBlock chunkMemory;
-    juce::uint32 chunkMemoryTime = 0;
+    CriticalSection stateInformationLock;
+    MemoryBlock chunkMemory;
+    uint32 chunkMemoryTime = 0;
     std::unique_ptr<EditorCompWrapper> editorComp;
     Vst2::ERect editorBounds;
     MidiBuffer midiEvents;
