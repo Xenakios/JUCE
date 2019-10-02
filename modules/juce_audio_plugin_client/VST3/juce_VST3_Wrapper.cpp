@@ -2476,7 +2476,7 @@ public:
             processContext = *data.processContext;
 
             if (juceVST3EditController != nullptr)
-                juceVST3EditController->vst3IsPlaying = (processContext.state & Vst::ProcessContext::kPlaying);
+                juceVST3EditController->vst3IsPlaying = (processContext.state & Vst::ProcessContext::kPlaying) != 0;
         }
         else
         {
